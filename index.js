@@ -3,6 +3,8 @@ canvas.width = innerWidth;
 canvas.height = innerHeight;
 document.body.append(canvas);
 var ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
 var vector2 = /** @class */ (function () {
     function vector2(x, y) {
         this.x = x;
@@ -17,7 +19,7 @@ var Color = /** @class */ (function () {
         this.b = b;
     }
     Color.prototype.toString = function () {
-        return "rgb(".concat(this.r, ",").concat(this.g, ", ").concat(this.b, ")");
+        return "rgb(" + this.r + "," + this.g + ", " + this.b + ")";
     };
     Color.lerp = function (c1, c2, t) {
         var r = c1.r + (c2.r - c1.r) * t;
@@ -31,11 +33,11 @@ function mapRange(value, min1, max1, min2, max2) {
     return min2 + (max2 - min2) * ((value - min1) / (max1 - min1));
 }
 var center = new vector2(innerWidth / 2, innerHeight / 2);
-var radius = Math.min(innerHeight, innerWidth) / 2 - 10;
+var radius = Math.min(innerHeight, innerWidth) / 2 - 50;
 var c1 = new Color(255, 0, 255);
 var c2 = new Color(0, 255, 255);
 var gradientIterations = 4;
-var drawingSteps = 180;
+var drawingSteps = 360;
 var rotationSpeed = 5;
 var newTech = true;
 console.log('%cEditable variables:', 'font-size: 1.5rem');
@@ -59,7 +61,8 @@ function drawCircle(center, radius, gradientIterations, color, color2, drawingSt
                 : mapRange(angle, 0, segmentSize, 0, 1);
             var lineColor = seg % 2 == 0 ? Color.lerp(color, color2, colorT) : Color.lerp(color2, color, colorT);
             ctx.beginPath();
-            ctx.lineWidth = 5;
+            ctx.lineWidth = 50;
+            ctx.lineCap = 'round';
             ctx.strokeStyle = lineColor.toString();
             ctx.moveTo(lineStart.x, lineStart.y);
             ctx.lineTo(lineEnd.x, lineEnd.y);
@@ -67,9 +70,58 @@ function drawCircle(center, radius, gradientIterations, color, color2, drawingSt
         }
     }
 }
+//rgb(3, 0, 31), rgb(115, 3, 192), rgb(236, 56, 188), rgb(253, 239, 249)
+/*
+        new Color(3, 0, 31),
+        new Color(115, 3, 192),
+        new Color(246, 56, 188),
+        new Color(255, 0, 0),
+        new Color(246, 56, 188),
+        new Color(115, 3, 192),
+        new Color(3, 0, 31),
+*/
+var circleOptions = {
+    colors: [
+        new Color(15, 09, 45),
+        new Color(115, 3, 192),
+        new Color(246, 56, 188),
+        new Color(255, 0, 0),
+        new Color(246, 56, 188),
+        new Color(115, 3, 192),
+        new Color(15, 9, 45),
+    ],
+    thickness: 35,
+    rotationSpeed: 25,
+    drawingSteps: 720
+};
+function getGradientAt(colors, t) {
+    var startIndex = Math.floor(t);
+    var endIndex = Math.min(colors.length - 1, startIndex + 1);
+    return Color.lerp(colors[startIndex], colors[endIndex], t - startIndex);
+}
+function newDrawCircle(center, radius, options) {
+    var PI2 = Math.PI * 2;
+    var drawingStep = PI2 / options.drawingSteps;
+    var timeOffset = (Date.now() / 10000) * options.rotationSpeed;
+    for (var angle = 0; angle < PI2; angle += drawingStep) {
+        var start = new vector2(center.x + Math.cos(angle + timeOffset) * radius, center.y + Math.sin(angle + timeOffset) * radius);
+        var end = new vector2(center.x + Math.cos(angle + drawingStep + timeOffset) * radius, center.y + Math.sin(angle + drawingStep + timeOffset) * radius);
+        var avgAngle = angle + drawingStep / 2;
+        var gradientT = mapRange(avgAngle, 0, PI2, 0, options.colors.length - 1);
+        ctx.beginPath();
+        ctx.lineWidth = options.thickness + Math.cos(timeOffset) * 5;
+        ctx.lineCap = 'square';
+        // ctx.strokeStyle = getGradientAt(options.colors, gradientT).toString()
+        ctx.strokeStyle = "hsl(" + (angle / PI2) * 360 + ",100%,50%)";
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+    }
+}
 function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawCircle(center, radius, gradientIterations, c1, c2, drawingSteps, rotationSpeed);
+    // drawCircle(center, radius, gradientIterations, c1, c2, drawingSteps, rotationSpeed)
+    newDrawCircle(center, radius, circleOptions);
     requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
