@@ -19,7 +19,7 @@ var Color = /** @class */ (function () {
         this.b = b;
     }
     Color.prototype.toString = function () {
-        return "rgb(" + this.r + "," + this.g + ", " + this.b + ")";
+        return "rgb(".concat(this.r, ",").concat(this.g, ", ").concat(this.b, ")");
     };
     Color.lerp = function (c1, c2, t) {
         var r = c1.r + (c2.r - c1.r) * t;
@@ -104,17 +104,17 @@ function newDrawCircle(center, radius, options) {
     var drawingStep = PI2 / options.drawingSteps;
     var timeOffset = (Date.now() / 10000) * options.rotationSpeed;
     for (var angle = 0; angle < PI2; angle += drawingStep) {
-        var start = new vector2(center.x + Math.cos(angle + timeOffset) * radius, center.y + Math.sin(angle + timeOffset) * radius);
-        var end = new vector2(center.x + Math.cos(angle + drawingStep + timeOffset) * radius, center.y + Math.sin(angle + drawingStep + timeOffset) * radius);
+        var start_1 = new vector2(center.x + Math.cos(angle + timeOffset) * radius, center.y + Math.sin(angle + timeOffset) * radius);
+        var end_1 = new vector2(center.x + Math.cos(angle + drawingStep + timeOffset) * radius, center.y + Math.sin(angle + drawingStep + timeOffset) * radius);
         var avgAngle = angle + drawingStep / 2;
         var gradientT = mapRange(avgAngle, 0, PI2, 0, options.colors.length - 1);
         ctx.beginPath();
         ctx.lineWidth = options.thickness + Math.cos(timeOffset) * 5;
         ctx.lineCap = 'square';
         // ctx.strokeStyle = getGradientAt(options.colors, gradientT).toString()
-        ctx.strokeStyle = "hsl(" + (angle / PI2) * 360 + ",100%,50%)";
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
+        ctx.strokeStyle = "hsl(".concat((angle / PI2) * 360, ",100%,50%)");
+        ctx.moveTo(start_1.x, start_1.y);
+        ctx.lineTo(end_1.x, end_1.y);
         ctx.stroke();
     }
 }
